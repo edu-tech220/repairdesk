@@ -19,6 +19,7 @@ public class AuthController : ControllerBase
         _db = db;
     }
 
+    /// <summary>Exchange a username/password for a JWT bearer token.</summary>
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

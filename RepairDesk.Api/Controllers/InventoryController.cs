@@ -21,6 +21,7 @@ public class InventoryController : ControllerBase
         _inventory = inventory;
     }
 
+    /// <summary>List every product with its current stock level.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -32,6 +33,7 @@ public class InventoryController : ControllerBase
         return Ok(products.Select(p => p.ToDto()));
     }
 
+    /// <summary>Add stock for a product. Admin only. Any matching Backordered cases resolve within the worker's next poll.</summary>
     [HttpPost("{productId:int}/restock")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Restock(int productId, RestockRequest request, CancellationToken cancellationToken)

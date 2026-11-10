@@ -21,6 +21,7 @@ public class DevicesController : ControllerBase
         _db = db;
     }
 
+    /// <summary>Look up a registered device by serial number.</summary>
     [HttpGet("{serialNumber}")]
     public async Task<ActionResult<DeviceDto>> GetBySerialNumber(string serialNumber, CancellationToken cancellationToken)
     {
@@ -36,6 +37,7 @@ public class DevicesController : ControllerBase
         return Ok(device.ToDto());
     }
 
+    /// <summary>Register a purchased device, computing its warranty expiration from the product's warranty terms.</summary>
     [HttpPost]
     public async Task<ActionResult<DeviceDto>> Register(RegisterDeviceRequest request, CancellationToken cancellationToken)
     {
