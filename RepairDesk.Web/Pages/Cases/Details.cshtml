@@ -1,0 +1,134 @@
+@page "{id:int}"
+@model RepairDesk.Web.Pages.Cases.DetailsModel
+@{
+    ViewData["Title"] = Model.Case is null ? "Case not found" : $"Case #{Model.Case.Id}";
+}
+
+@if (Model.Case is null)
+{
+    <h1>Case not found</h1>
+}
+else
+{
+    var c = Model.Case;
+
+    <h1>Case #@c.Id <span class="badge @c.Status.CssBadgeClass()">@c.Status</span></h1>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">@Model.SuccessMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-error">@Model.ErrorMessage</div>
+    }
+
+    <div class="card">
+        <h3>Details</h3>
+        <p><strong>Serial number:</strong> @c.SerialNumber</p>
+        <p><strong>Product:</strong> @c.ProductName</p>
+        <p><strong>Reported issue:</strong> @c.ReportedIssue</p>
+        <p><strong>Submitted:</strong> @c.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</p>
+        @if (c.DenialReason is not null)
+        {
+            <p><strong>Denial reason:</strong> @c.DenialReason</p>
+        }
+        @if (c.TrackingNumber is not null)
+        {
+            <p><strong>Tracking number:</strong> @c.TrackingNumber</p>
+        }
+        @if (c.Resolution is not null)
+        {
+            <p><strong>Resolution:</strong> @c.Resolution @(c.ResolutionNotes is not null ? $"— {c.ResolutionNotes}" : "")</p>
+        }
+        @if (c.RefundAmount is not null)
+        {
+            <p><strong>Refund amount:</strong> @c.RefundAmount.Value.ToString("C")</p>
+        }
+    </div>
+
+    <div class="card">
+        <h3>Actions</h3>
+
+        @if (c.Status == CaseStatus.UnderReview)
+        {
+            <form method="post" asp-page-handler="Approve" class="action-row">
+                <input type="hidden" asp-for="ETag" />
+                <button type="submit" class="btn">Approve</button>
+            </form>
+            <form method="post" asp-page-handler="Reject" class="stacked-form">
+                <input type="hidden" asp-for="ETag" />
+                <div class="form-group">
+                    <label asp-for="RejectReason">Rejection reason</label>
+                    <input asp-for="RejectReason" required />
+                </div>
+                <div class="action-row">
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        }
+        else if (c.Status == CaseStatus.AwaitingReturn)
+        {
+            <form method="post" asp-page-handler="Receive" class="stacked-form">
+                <input type="hidden" asp-for="ETag" />
+                <div class="form-group">
+                    <label asp-for="TrackingNumber">Tracking number (optional)</label>
+                    <input asp-for="TrackingNumber" />
+                </div>
+                <div class="action-row">
+                    <button type="submit" class="btn">Mark device as received</button>
+                </div>
+            </form>
+        }
+        else if (c.Status == CaseStatus.Diagnosing)
+        {
+            <form method="post" asp-page-handler="Resolve" class="stacked-form">
+                <input type="hidden" asp-for="ETag" />
+                <div class="form-group">
+                    <label asp-for="Resolution">Resolution</label>
+                    <select asp-for="Resolution">
+                        @foreach (var option in Enum.GetValues<ResolutionType>())
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ResolutionNotes">Notes (optional)</label>
+                    <textarea asp-for="ResolutionNotes"></textarea>
+                </div>
+                <div class="action-row">
+                    <button type="submit" class="btn">Resolve case</button>
+                </div>
+            </form>
+        }
+        else if (c.Status == CaseStatus.Backordered)
+        {
+            <p class="field-note">Waiting on replacement stock. This case resolves itself automatically once the product is restocked.</p>
+        }
+        else if (c.Status == CaseStatus.Resolved)
+        {
+            <form method="post" asp-page-handler="Close" class="action-row">
+                <input type="hidden" asp-for="ETag" />
+                <button type="submit" class="btn">Close case</button>
+            </form>
+        }
+        else
+        {
+            <p class="field-note">This case is in a final state and needs no further action.</p>
+        }
+    </div>
+
+    <div class="card">
+        <h3>History</h3>
+        <ul class="timeline">
+            @foreach (var e in Model.History)
+            {
+                <li>
+                    <div>@e.FromStatus &rarr; @e.ToStatus</div>
+                    <div class="meta">@e.OccurredAt.ToString("yyyy-MM-dd HH:mm") UTC &middot; @e.ActorUsername @(e.Note is not null ? $"— {e.Note}" : "")</div>
+                </li>
+            }
+        </ul>
+    </div>
+}
