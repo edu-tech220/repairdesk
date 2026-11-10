@@ -67,7 +67,9 @@ builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("claims-submission", limiterOptions =>
     {
-        limiterOptions.PermitLimit = 5;
+        // Relaxed under the "Testing" host so the integration suite can submit more
+        // than five claims per run without tripping the same limiter real users hit.
+        limiterOptions.PermitLimit = builder.Environment.IsEnvironment("Testing") ? 1000 : 5;
         limiterOptions.Window = TimeSpan.FromMinutes(1);
         limiterOptions.QueueLimit = 0;
     });
