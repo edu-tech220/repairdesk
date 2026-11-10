@@ -1,10 +1,32 @@
+using Microsoft.EntityFrameworkCore;
 using RepairDesk.Api.Models;
 using RepairDesk.Api.Models.Enums;
+using RepairDesk.Api.Services;
 
 namespace RepairDesk.Api.Data;
 
 public static class DbSeeder
 {
+    public static async Task SeedAdminAsync(RepairDeskDbContext db, IPasswordHasher passwordHasher, string username, string password)
+    {
+        if (await db.Users.AnyAsync(u => u.Username == username))
+        {
+            return;
+        }
+
+        var (hash, salt) = passwordHasher.HashPassword(password);
+        db.Users.Add(new AppUser
+        {
+            Username = username,
+            PasswordHash = hash,
+            PasswordSalt = salt,
+            Role = UserRole.Admin,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await db.SaveChangesAsync();
+    }
+
     public static async Task SeedCatalogAsync(RepairDeskDbContext db)
     {
         if (db.Products.Any())
