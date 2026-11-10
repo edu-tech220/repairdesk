@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RepairDesk.Api.Data;
 using RepairDesk.Api.Models;
@@ -13,20 +14,24 @@ public static class TestDataSeeder
     public const string AgentUsername = "agent";
     public const string AgentPassword = "Agent#12345";
 
+    /// <summary>Idempotent: safe to call once per test method even though the fixture's database is shared across a whole test class.</summary>
     public static async Task SeedUsersAsync(ApiWebApplicationFactory factory)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<RepairDeskDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-        AddUser(db, hasher, AdminUsername, AdminPassword, UserRole.Admin);
-        AddUser(db, hasher, AgentUsername, AgentPassword, UserRole.Agent);
-
-        await db.SaveChangesAsync();
+        await AddUserIfMissingAsync(db, hasher, AdminUsername, AdminPassword, UserRole.Admin);
+        await AddUserIfMissingAsync(db, hasher, AgentUsername, AgentPassword, UserRole.Agent);
     }
 
-    private static void AddUser(RepairDeskDbContext db, IPasswordHasher hasher, string username, string password, UserRole role)
+    private static async Task AddUserIfMissingAsync(RepairDeskDbContext db, IPasswordHasher hasher, string username, string password, UserRole role)
     {
+        if (await db.Users.AnyAsync(u => u.Username == username))
+        {
+            return;
+        }
+
         var (hash, salt) = hasher.HashPassword(password);
         db.Users.Add(new AppUser
         {
@@ -36,6 +41,7 @@ public static class TestDataSeeder
             Role = role,
             CreatedAt = DateTime.UtcNow
         });
+        await db.SaveChangesAsync();
     }
 
     /// <summary>Registers a product with inventory and a device under the given warranty terms, returning the serial number.</summary>

@@ -12,7 +12,7 @@ public static class TestAuthExtensions
         var response = await client.PostAsJsonAsync("api/auth/login", new { username, password });
         response.EnsureSuccessStatusCode();
 
-        var login = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        var login = await response.Content.ReadFromJsonAsync<LoginResponse>(TestJson.Options);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.Token);
         return client;
     }
