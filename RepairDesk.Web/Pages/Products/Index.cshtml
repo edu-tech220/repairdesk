@@ -1,0 +1,54 @@
+@page
+@model RepairDesk.Web.Pages.Products.IndexModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h1>Products</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<div class="action-row">
+    @if (User.IsInRole("Admin"))
+    {
+        <a class="btn" asp-page="/Products/Create">Add product</a>
+    }
+    <a class="btn btn-secondary" asp-page="/Devices/Register">Register a device</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Standard / Extended warranty</th>
+            <th>In stock</th>
+            @if (User.IsInRole("Admin"))
+            {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr>
+                <td>@product.Sku</td>
+                <td>@product.Name</td>
+                <td>@product.Category</td>
+                <td>@product.Price.ToString("C")</td>
+                <td>@product.StandardWarrantyMonths mo / @product.ExtendedWarrantyMonths mo</td>
+                <td>@(product.QuantityOnHand == 0 ? "Out of stock" : product.QuantityOnHand.ToString())</td>
+                @if (User.IsInRole("Admin"))
+                {
+                    <td><a asp-page="/Inventory/Restock" asp-route-productId="@product.Id">Restock</a></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

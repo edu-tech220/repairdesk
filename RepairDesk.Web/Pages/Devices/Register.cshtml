@@ -1,0 +1,58 @@
+@page
+@model RepairDesk.Web.Pages.Devices.RegisterModel
+@{
+    ViewData["Title"] = "Register device";
+}
+
+<h1>Register a purchased device</h1>
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="stacked-form">
+    <div class="form-group">
+        <label asp-for="Input.SerialNumber"></label>
+        <input asp-for="Input.SerialNumber" required />
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.ProductId"></label>
+        <select asp-for="Input.ProductId">
+            <option value="">Select a product</option>
+            @foreach (var product in Model.Products)
+            {
+                <option value="@product.Id">@product.Name (@product.Sku)</option>
+            }
+        </select>
+        <span asp-validation-for="Input.ProductId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.OwnerName"></label>
+        <input asp-for="Input.OwnerName" required />
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.OwnerEmail"></label>
+        <input asp-for="Input.OwnerEmail" type="email" required />
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.PurchaseDate"></label>
+        <input asp-for="Input.PurchaseDate" type="date" required />
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.WarrantyTier"></label>
+        <select asp-for="Input.WarrantyTier">
+            @foreach (var tier in Enum.GetValues<WarrantyTier>())
+            {
+                <option value="@tier">@tier</option>
+            }
+        </select>
+    </div>
+    <div class="action-row">
+        <button type="submit" class="btn">Register device</button>
+    </div>
+</form>
