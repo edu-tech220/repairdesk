@@ -20,6 +20,7 @@ public class ProductsController : ControllerBase
         _db = db;
     }
 
+    /// <summary>List every product with its current stock level.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -31,6 +32,7 @@ public class ProductsController : ControllerBase
         return Ok(products.Select(p => p.ToDto()));
     }
 
+    /// <summary>Get a single product by id.</summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductDto>> GetById(int id, CancellationToken cancellationToken)
     {
@@ -46,6 +48,7 @@ public class ProductsController : ControllerBase
         return Ok(product.ToDto());
     }
 
+    /// <summary>Create a product with its warranty terms and initial stock. Admin only.</summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProductDto>> Create(CreateProductRequest request, CancellationToken cancellationToken)
