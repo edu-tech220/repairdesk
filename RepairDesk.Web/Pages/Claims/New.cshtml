@@ -1,0 +1,45 @@
+@page
+@model RepairDesk.Web.Pages.Claims.NewModel
+@{
+    ViewData["Title"] = "Submit a claim";
+}
+
+<h1>Submit a warranty claim</h1>
+<p class="field-note">Enter the serial number printed on the device and describe the issue. We'll check warranty coverage automatically.</p>
+
+@if (Model.Result is not null)
+{
+    <div class="alert alert-success">
+        <strong>Claim #@Model.Result.Id submitted.</strong>
+        Current status: <span class="badge @Model.Result.Status.CssBadgeClass()">@Model.Result.Status</span>
+        @if (Model.Result.DenialReason is not null)
+        {
+            <p>@Model.Result.DenialReason</p>
+        }
+        else
+        {
+            <p>Keep this case number &mdash; an agent will review it shortly.</p>
+        }
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="stacked-form">
+    <div class="form-group">
+        <label asp-for="Input.SerialNumber"></label>
+        <input asp-for="Input.SerialNumber" placeholder="e.g. DEMO-LAP-0001" required />
+        <span asp-validation-for="Input.SerialNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Input.ReportedIssue"></label>
+        <textarea asp-for="Input.ReportedIssue" placeholder="Describe what's wrong with the device" required></textarea>
+        <span asp-validation-for="Input.ReportedIssue" class="text-danger"></span>
+    </div>
+    <div class="action-row">
+        <button type="submit" class="btn">Submit claim</button>
+    </div>
+</form>
