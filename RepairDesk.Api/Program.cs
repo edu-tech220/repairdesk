@@ -113,7 +113,22 @@ if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<RepairDeskDbContext>();
-    await db.Database.MigrateAsync();
+
+    // SQL Server in docker-compose can still be finishing startup when the API
+    // container starts, even behind a healthcheck, so retry the first connection.
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            await db.Database.MigrateAsync();
+            break;
+        }
+        catch (Exception) when (attempt < 5)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+
     await DbSeeder.SeedCatalogAsync(db);
 
     var demoAdmin = app.Configuration.GetSection("DemoAdmin");
