@@ -1,10 +1,27 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero">
+    <h1>Warranty claims, handled end to end</h1>
+    <p>
+        RepairDesk tracks a product from warranty registration through an RMA request,
+        diagnosis, replacement or refund, and closeout &mdash; with stock reservations and
+        case updates that stay consistent even when two agents act at once.
+    </p>
+    <div class="cta-row">
+        <a class="btn" asp-page="/Claims/New">Submit a warranty claim</a>
+        <a class="btn btn-secondary" asp-page="/Account/Login">Agent sign in</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3>How a claim moves through the system</h3>
+    <p class="field-note">
+        Under Review &rarr; Awaiting Return &rarr; Diagnosing &rarr; Resolved &rarr; Closed,
+        with automatic rejection for expired warranties and an automatic Backordered state
+        when a replacement unit isn't in stock yet.
+    </p>
 </div>
